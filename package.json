@@ -1,0 +1,14 @@
+{
+  "name": "hm-2",
+  "version": "1.0.0",
+  "description": "homework-2",
+  "main": "createList.js",
+  "type": "module",
+  "scripts": {
+    "create_file": "node createList.js",
+    "sort_split": "node sortSplit.js",
+    "merge_files": "node --max-old-space-size=50 mergeFiles.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
