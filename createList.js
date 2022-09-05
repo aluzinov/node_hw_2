@@ -1,7 +1,5 @@
 import { saveList } from "./saveList.js";
 
-const max_total_bytes = 104857600
-
 const createList = (max_bytes) => {
   let count_bytes = 0
 
@@ -14,10 +12,7 @@ const createList = (max_bytes) => {
   }
 }
 
-export const create = async () => {
+export const create = async (fileName, max_total_bytes) => {
   const list = createList(max_total_bytes)()
-  await saveList(list, 'data.txt')
-  console.log('finished')
+  await saveList(list, fileName)
 }
-
-create()

@@ -1,35 +1,51 @@
-import { saveList } from './saveList.js';
+import * as path from 'path';
+import * as fs from 'fs';
+import { saveList, getDataDir } from './saveList.js';
 import { mergeSort } from './mergeSort.js';
 import { createNumberReader } from './readNumber.js'
 
-const max = 20971520
-const max_total = 104857600
-
-let count = 0
-let total = 0
-let fileCount = 0
-
-const saveSorted = async (list) => {
-  total+=count
-  console.log(`read ${Math.round(total/max_total * 100)}%`)
-  console.log(`soring sublist`)
+const sortAndSave = async (list, chunkNum) => {
+  console.log(`sorting sublist`)
   const sorted = mergeSort(list)
-  await saveList(sorted, `chunk_${fileCount++}.txt`)
+  const fileName = `chunk_${chunkNum}.txt`
+  await saveList(sorted, fileName)
+  return fileName
 }
 
-let list = []
-const numberReader = createNumberReader('data.txt')()
-for await (const num of numberReader) {
-  list.push(num)
-  count+=num.toString().length + 1
+export const splitAndSort = async (sourceFile) => {
+  const filePath = path.resolve(getDataDir(), sourceFile)
+  const sourceFileSize = fs.statSync(filePath).size
+  const maxChunkSize = sourceFileSize / 5;
 
-  if (count >= max) {     
-    await saveSorted(list)
-
-    count = 0 
-    list = []
+  const sortedFiles = []
+  let list = []
+  let readBytes = 0
+  let readBytesTotal = 0
+  let first = true
+  const numberReader = createNumberReader(sourceFile)()
+  for await (const num of numberReader) {
+    if (first) {
+      first = false
+    } else {
+      readBytes += 1
+    }
+    readBytes+=num.toString().length
+    list.push(num)
+  
+    if (readBytes >= maxChunkSize) {
+      sortedFiles.push(await sortAndSave(list, sortedFiles.length))
+      readBytesTotal+=readBytes
+      console.log(`read ${Math.round(readBytesTotal/sourceFileSize * 100)}% of '${sourceFile}'`)
+  
+      readBytes = 0 
+      list = []
+    }
   }
-}
+  
+  // save last
+  if (list.length > 0) {
+    sortedFiles.push(await sortAndSave(list, sortedFiles.length))
+  }
 
-// save last
-saveSorted(list)
+  return sortedFiles
+}

@@ -15,46 +15,39 @@ export const saveList = async (list, fileName) => {
   const filePath = path.resolve(getDataDir(), fileName)
   const ws = fs.createWriteStream(filePath, {
     encoding: 'utf8',
-    flags: 'w', 
+    flags: 'w',
   })
   ws.on('open', async () => {
       console.log(`saving list of ${list.length} elements in file '${filePath}'`)
-      try {
-        let previous = 0
-        let i = 0
-        let first = true
-        for await (const value of list) {
-          const stringValue = value.toString()
-          let stringToWrite
-          if (first) {
-            first = false
-            stringToWrite = stringValue
-          } else {
-            stringToWrite = NUM_SEPARATOR + stringValue
-          }
-          const promise = write(ws, stringToWrite)
-          if (promise) {
-              // we got a drain event, therefore we wait
-              await promise
-          }
-          const percent = Math.round((i / list.length) * 100)
-          if (percent > previous && percent % 10 === 0) {
-            console.log(`saved ${percent}%`)
-            previous = percent
-          }
-          i++
+      let previous = 0
+      let i = 0
+      let first = true
+      for await (const value of list) {
+        const stringValue = value.toString()
+        let stringToWrite
+        if (first) {
+          first = false
+          stringToWrite = stringValue
+        } else {
+          stringToWrite = NUM_SEPARATOR + stringValue
         }
-
-        console.log(`file saved`)
-        resolve()
+        const promise = write(ws, stringToWrite)
+        if (promise) {
+            // we got a drain event, therefore we wait
+            await promise
+        }
+        const percent = Math.round((i / list.length) * 100)
+        if (percent > previous && percent % 10 === 0) {
+          console.log(`saved ${percent}%`)
+          previous = percent
+        }
+        i++
       }
-      catch (error) {
-        reject(error)
-      }
-      finally {
-        ws.close()
-      }
+      console.log(`${i} elements were saved in file '${filePath}'`)
+      ws.end()
   })
+  ws.on("finish", resolve); // not sure why you want to pass a boolean
+  ws.on("error", reject); // don't forget this!
 })}
 
 const write = (writer, data) => {

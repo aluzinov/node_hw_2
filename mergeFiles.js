@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import { getDataDir, saveList } from './saveList.js';
 import { createNumberReader } from './readNumber.js'
 
@@ -25,8 +24,7 @@ const getMin = (list) => {
   return result
 }
 
-async function* mergedList() {
-  const chunkFiles = await listChunks()
+async function* mergedList(chunkFiles) {
   const numberReaders = chunkFiles.map((chunk) => createNumberReader(chunk)())
   for await (const reader of numberReaders) {
     const next = await reader.next()
@@ -46,4 +44,4 @@ async function* mergedList() {
   } while(min != undefined)
 }
 
-saveList(mergedList(), 'sorted.txt')
+export const mergeSorted = async (fileNames, sortedFile) => saveList(mergedList(fileNames), sortedFile)
