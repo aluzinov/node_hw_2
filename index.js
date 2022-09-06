@@ -2,7 +2,7 @@ import { create } from './createList.js'
 import { splitAndSort } from './sortSplit.js'
 import { mergeSorted } from './mergeFiles.js'
 
-export const max_total_bytes = 1048576// 00
+export const max_total_bytes = 104857600
 
 const DATA_FILE = 'data.txt'
 const RESULT_FILE = 'sorted.txt'

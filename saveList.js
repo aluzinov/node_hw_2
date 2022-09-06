@@ -7,7 +7,11 @@ export const NUM_SEPARATOR = ','
 export const getDataDir = () => {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  return path.join(__dirname, '/data')
+  const dataPath = path.join(__dirname, '/data')
+  if (fs.existsSync(dataPath) == false) {
+    fs.mkdirSync(dataPath);
+  }
+  return dataPath
 }
 
 export const saveList = async (list, fileName) => {
